@@ -1,6 +1,8 @@
 # blog api를 만들어 보자 🧐
 
-# 1.필요한 패키지 설치
+<br>
+
+## 1.필요한 패키지 설치
 
 ```bash
 npm install @nestjs/config  @nestjs/typeorm typeorm class-transformer class-validator pg
@@ -13,9 +15,11 @@ npm install @nestjs/config  @nestjs/typeorm typeorm class-transformer class-vali
 - `class-validator`: 객체의 유효성 검사를 수행하는 데 사용되는 패키지
 - `pg` : PostgreSQL 데이터베이스에 연결하고 상호 작용하기 위한 공식 드라이버로 PostgreSQL 데이터베이스와 통신할 때 사용한다.
 
-# 2. 데이터베이스 연결
+<br>
 
-## 환경변수 설정
+## 2. 데이터베이스 연결
+
+### 2.1 환경변수 설정
 
 ```ts
 // app.module.ts
@@ -39,6 +43,7 @@ export class AppModule {}
 그 다음 .env파일에서 다음과 같이 정의한다.
 
 ```
+// .env
 PORT = 애플리케이션에서 사용하는 포트 번호
 DATABASE_PORT = 데이터베이스 서버에 연결하기 위한 포트 번호
 DATABASE_USER = 데이터베이스에 접속할 때 사용되는 사용자 이름
@@ -48,6 +53,8 @@ DATABASE_DB = 데이터베이스 이름
 ```
 
 이제 db-connection.service.ts 파일을 따로 만들어서 다음과 같이 설정하자.
+
+### 2.2 데이터베이스 연결 옵션 설정
 
 ```ts
 // db-connection.service.ts
@@ -78,24 +85,15 @@ export class DatabaseConnectionService implements TypeOrmOptionsFactory {
 `DatabaseConnectionService` 클래스가 `TypeOrmOptionsFactory` 인터페이스의 모든 메서드를 구현해 TypeORM 모듈의 설정을 제공한다. 이 설정은
 `createTypeOrmOptions` 메서드 내에서 TypeORM 연결 옵션을 구성하고 TypeOrmModuleOptions형식으로 반환해야 한다.
 
-```ts
-@Injectable()
-export class DatabaseConnectionService implements TypeOrmOptionsFactory {
-  createTypeOrmOptions(): TypeOrmModuleOptions {
-    return {
-      // TypeORM 연결 옵션 구성
-    };
-  }
-}
-```
-
-`DatabaseConnectionService` 클래스를 모듈에서 `TypeOrmModule`에 주입하기 위해 @Injectable() 데코레이터를 사용하여 주입 가능한 클래스로 만든다.
+<br>
 
 ```ts
 export class DatabaseConnectionService implements TypeOrmOptionsFactory {}
 ```
 
 `DatabaseConnectionService` 클래스는 `TypeOrmOptionsFactory` 인터페이스의 모든 메서드를 구현해 TypeORM 모듈의 설정을 제공한다.
+
+<br>
 
 ```ts
 createTypeOrmOptions(): TypeOrmModuleOptions {
@@ -106,3 +104,36 @@ createTypeOrmOptions(): TypeOrmModuleOptions {
 ```
 
 모듈의 설정은 `createTypeOrmOptions` 메서드 내에서 TypeORM 연결 옵션을 구성하고 `TypeOrmModuleOptions` 형식으로 반환해야 한다.
+
+### 2.3 데이터베이스 연결 설정
+
+마지막으로 `DatabaseConnectionService` 클래스를 app.module.ts 파일에서 아래와 같이 연결해주면 된다.
+
+```ts
+// app.module.ts
+
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+// 불러옴
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DatabaseConnectionService } from './db-connection.service';
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    // 데이터베이스 연결 설정
+    TypeOrmModule.forRootAsync({
+      useClass: DatabaseConnectionService,
+    }),
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+```
+
+TypeOrmModule.forRootAsync() 메소드를 사용하여 데이터베이스 연결해주자. 이때 useClass 옵션을 사용해 `DatabaseConnectionService` 클래스를 지정해주면 데이터베이스 연결이 완료된다~~!🚀🚀
+
+- `forRoot` : 동기적으로 모듈 설정(환경 변수나 설정 값)
+- `forRootAsync` : 비동기적으로 설정(데이터베이스,서비스)
