@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseConnectionService } from './db-connection.service';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // 환경변수 전역으로 사용
@@ -12,6 +13,8 @@ import { DatabaseConnectionService } from './db-connection.service';
     TypeOrmModule.forRootAsync({
       useClass: DatabaseConnectionService, //useClass옵션을 사용해 DatabaseConnectionService 클래스를 지정함
     }),
+    // add module
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
