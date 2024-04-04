@@ -1,41 +1,56 @@
-import { Controller, Post, Body, ValidationPipe } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDTO, RegisterDTO } from '../models/user.dto';
-//  /api/users
+
 @Controller('users')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post()
-  register(@Body(ValidationPipe) authData: RegisterDTO) {
+  register(@Body() authData: RegisterDTO) {
     return this.authService.register(authData);
   }
 
   @Post('/login')
-  login(@Body(ValidationPipe) authData: LoginDTO) {
+  login(@Body() authData: LoginDTO) {
     return this.authService.login(authData);
   }
 }
+/*
+1. Authentication
 
-// Authentication
+POST api/users/login
 
-// POST api/users/login
-/* ex json
 {
   "user": {
       "email": "coco@test.com",
       "password" : "testxxxx"
     }
 }
-*/
-// Registration
-// POST api/users
-/* ex json
+
+2. Registration
+
+POST api/users
+
 {
   "user": {
-     "username": "coco",
+      "username": "coco",
       "email": "coco@test.com",
       "password" : "testxxxx"
     }
 }
-*/
+
+3.  Get Current User
+GET /api/user
+
+4. Update User
+PUT /api/user
+
+{
+  "user":{
+    "email": "coco@test.com",
+    "bio": "I like to skateboard",
+    "image": "https://nest.jpg"
+  }
+}
+ */
